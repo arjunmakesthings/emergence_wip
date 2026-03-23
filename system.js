@@ -20,7 +20,7 @@ function setup() {
   background(0);
 }
 function draw() {
-  background(0); 
+  background(0);
   world.run();
 }
 
@@ -30,6 +30,7 @@ definitions:
 
 class World {
   constructor() {
+    // the world also has coordinates in the universe; so.
     this.x = 0;
     this.y = 0;
 
@@ -38,37 +39,25 @@ class World {
     this.time = 0;
 
     //helpers for calculations:
-    this.prev_hour = -1;
-
-    this.poly_groups = [];
+    this.prev_second = 0;
   }
   big_bang() {
     for (let i = 0; i < 2; i++) {
-      // let x = width / 2;
-      // let y = height / 2;
-      // this.beings.push(Being.birth(x, y));
       this.beings.push(Being.birth(random(width), random(height)));
     }
-    // let x = width / 2;
-    // let y = height / 2;
-    // this.beings.push(Being.birth(x, y));
   }
   run() {
-    // background(0);
+    //keep time.
     this.time = this.keep_time();
-
+    let second = this.time[0];
     let hour = this.time[1];
 
-    //birth:
-    if (this.prev_hour != hour) {
-      let n = Math.floor(random(0, 20));
-      for (let i = 0; i < n; ++i) {
-        this.beings.push(Being.birth(random(width), random(height)));
-      }
+    //every second, a being can be created or killed.
+    if (second > this.prev_second) {
+      this.create_kill();
     }
-    this.prev_hour = hour;
 
-    //death:
+    //handle beings:
     for (let i = this.beings.length - 1; i >= 0; i--) {
       let being = this.beings[i];
       being.live(this.time);
@@ -76,6 +65,27 @@ class World {
     }
 
     // this.interpret();
+
+    //update time.
+    this.prev_second = second;
+  }
+
+  create_kill() {
+    let p_birth = random();
+    let t_birth = random();
+
+    if (p_birth > t_birth) {
+      this.beings.push(Being.birth(random(width), random(height)));
+    }
+
+    let p_death = random();
+    let t_death = random(0.75, 1);
+
+    //small chance of random death.
+    if (p_death > t_death && this.beings.length > 2) {
+      let n = Math.floor(random(0, this.beings.length));
+      this.beings[n].alive = false;
+    }
   }
 
   //helper to keep time.
@@ -186,7 +196,7 @@ class Being {
   }
 
   show() {
-    noFill(); 
+    noFill();
     let c = map(this.curr_age, 0, 80, 255, 50);
     stroke(c);
     circle(this.pos.x, this.pos.y, this.mass);
