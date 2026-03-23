@@ -71,18 +71,18 @@ class World {
   }
 
   create_kill() {
-    let p_birth = random();
-    let t_birth = random();
+    //small probabilities for birth and death here.
+    let c_birth = random();
+    let p_birth = random(0, 0.08);
 
-    if (p_birth > t_birth) {
+    if (c_birth < p_birth) {
       this.beings.push(Being.birth(random(width), random(height)));
     }
 
-    let p_death = random();
-    let t_death = random(0.75, 1);
+    let c_death = random();
+    let p_death = random(0, 0.01);
 
-    //small chance of random death.
-    if (p_death > t_death && this.beings.length > 2) {
+    if (c_death < p_death && this.beings.length > 2) {
       let n = Math.floor(random(0, this.beings.length));
       this.beings[n].alive = false;
     }
