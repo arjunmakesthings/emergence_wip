@@ -20,6 +20,7 @@ function setup() {
   background(0);
 }
 function draw() {
+  background(0); 
   world.run();
 }
 
@@ -74,7 +75,7 @@ class World {
       if (!being.alive) this.beings.splice(i, 1);
     }
 
-    this.interpret();
+    // this.interpret();
   }
 
   //helper to keep time.
@@ -101,6 +102,10 @@ class World {
     return time;
   }
 }
+
+/*
+being-definition:
+*/
 
 class Being {
   constructor(x, y) {
@@ -131,6 +136,7 @@ class Being {
     //they move at different speeds.
     this.speed = random(0, 2);
 
+    //they are alive when born.
     this.alive = true;
 
     //helper variables to do calculations.
@@ -173,7 +179,7 @@ class Being {
   }
 
   live(t) {
-    // this.show();
+    this.show();
     this.move(t);
     this.age();
     this.die();
