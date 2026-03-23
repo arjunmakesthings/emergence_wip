@@ -158,31 +158,47 @@ class Being {
   }
 
   //constructor helper to make a schedule:
-  make_schedule() {
-    let f = 24;
-    let segments = Math.floor(random(3, 9));
-    let cuts = [0];
 
-    for (let i = 0; i < segments - 1; i++) {
-      let cut;
-      do {
-        cut = Math.floor(random(1, f));
-      } while (cuts.includes(cut));
-      cuts.push(cut);
-    }
-    cuts.push(f);
+  make_schedule(){
+    // a day length is 24.
 
-    // Sort cut points
-    cuts.sort((a, b) => a - b);
+    let sched = []; 
+    let starting_hour = Math.floor(random(0,24)); 
 
-    // Build segments as [start, end] pairs
-    let schedule = [];
-    for (let i = 0; i < cuts.length - 1; i++) {
-      schedule.push([cuts[i], cuts[i + 1]]);
+    for (let i = 0; i<=day_length; i++){
+      sched.push(i); 
+      arr_shuffle(sched);
     }
 
-    return schedule;
+    console.log(sched);
+    noLoop(); 
+
   }
+  // make_schedule() {
+  //   let f = 24;
+  //   let segments = Math.floor(random(3, 9));
+  //   let cuts = [0];
+
+  //   for (let i = 0; i < segments - 1; i++) {
+  //     let cut;
+  //     do {
+  //       cut = Math.floor(random(1, f));
+  //     } while (cuts.includes(cut));
+  //     cuts.push(cut);
+  //   }
+  //   cuts.push(f);
+
+  //   // Sort cut points
+  //   cuts.sort((a, b) => a - b);
+
+  //   // Build segments as [start, end] pairs
+  //   let schedule = [];
+  //   for (let i = 0; i < cuts.length - 1; i++) {
+  //     schedule.push([cuts[i], cuts[i + 1]]);
+  //   }
+
+  //   return schedule;
+  // }
 
   static birth(x, y) {
     return new Being(x, y);
@@ -279,4 +295,25 @@ class Being {
       this.alive = false;
     }
   }
+}
+
+// global helpers: 
+function arr_shuffle(array) {
+  let currentIndex = array.length,
+    randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex !== 0) {
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element using array destructuring.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+
+  return array;
 }
