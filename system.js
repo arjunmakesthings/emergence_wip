@@ -11,7 +11,7 @@ let day = 0;
 let time = [0, 0, 0, 0]; //an array of (human) ms, seconds, minutes, hours.
 
 function setup() {
-  createCanvas(1000, 1000);
+  createCanvas(windowWidth, windowHeight);
 
   world = new World();
   world.big_bang();
@@ -43,7 +43,7 @@ class World {
     this.poly_groups = [];
   }
   big_bang() {
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 2; i++) {
       // let x = width / 2;
       // let y = height / 2;
       // this.beings.push(Being.birth(x, y));
@@ -131,7 +131,7 @@ class Being {
     this.prob_to_die = 0;
 
     //they have a mass.
-    this.mass = 1;
+    this.mass = 10;
 
     //they move at different speeds.
     this.speed = random(0, 2);
@@ -181,13 +181,14 @@ class Being {
   live(t) {
     this.show();
     this.move(t);
-    this.age();
+    // this.age();
     this.die();
   }
 
   show() {
+    noFill(); 
     let c = map(this.curr_age, 0, 80, 255, 50);
-    fill(c);
+    stroke(c);
     circle(this.pos.x, this.pos.y, this.mass);
   }
 

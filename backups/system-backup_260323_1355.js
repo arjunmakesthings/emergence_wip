@@ -13,19 +13,25 @@ let time = [0, 0, 0, 0]; //an array of (human) ms, seconds, minutes, hours.
 function setup() {
   createCanvas(1000, 1000);
 
-  world = new World(0, 0);
+  world = new World();
   world.big_bang();
 
+  //wipe the background clean.
   background(0);
 }
 function draw() {
+  background(0); 
   world.run();
 }
 
+/*
+definitions:
+*/
+
 class World {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
+  constructor() {
+    this.x = 0;
+    this.y = 0;
 
     this.beings = [];
 
@@ -37,7 +43,7 @@ class World {
     this.poly_groups = [];
   }
   big_bang() {
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 2; i++) {
       // let x = width / 2;
       // let y = height / 2;
       // this.beings.push(Being.birth(x, y));
@@ -49,7 +55,7 @@ class World {
   }
   run() {
     // background(0);
-    this.time = keep_time();
+    this.time = this.keep_time();
 
     let hour = this.time[1];
 
@@ -69,102 +75,37 @@ class World {
       if (!being.alive) this.beings.splice(i, 1);
     }
 
-    this.interpret();
+    // this.interpret();
   }
-  interpret() {
-    /*
-    interpretation 1:
-    beings are grouped together at birth, based on the proximity of being born next to other beings. 
-    */
 
-    let dist_thresh = 50; //distance to consider two beings part of the same group.
-    let groups = []; //store groups.
-    let visited = new Set(); //to track if already grouped.
+  //helper to keep time.
+  keep_time() {
+    const ms = millis() - day;
+    const seconds = Math.floor(ms / 1000) % 60;
+    const minutes = Math.floor(ms / (1000 * 60)) % 60;
+    const hours = Math.floor(ms / (1000 * 60 * 60));
 
-    for (let i = 0; i < this.beings.length; i++) {
-      // if (visited.has(i)) continue; //if already in a group, you can't be part of another group.
-
-      //find neighbours for grouping:
-      let neighbors = [this.beings[i]];
-
-      for (let j = i + 1; j < this.beings.length; j++) {
-        let d = p5.Vector.dist(this.beings[i].pos, this.beings[j].pos);
-        if (d < dist_thresh) neighbors.push(this.beings[j]);
-      }
-
-      //a group is more than 1 being.
-      if (neighbors.length > 1) {
-        neighbors.forEach((b) => visited.add(this.beings.indexOf(b)));
-
-        //check whether members are dead or alive.
-        let living_members = neighbors.filter((b) => b.alive);
-        let all_dead = living_members.length === 0;
-
-        //skip group, if some members are dead but not all.
-        if (!all_dead && living_members.length < neighbors.length) continue;
-
-        //use all members for centroid & sorting (either all living or all dead).
-        let members_to_process = all_dead ? neighbors : living_members;
-
-        //find centroid for smoothening.
-        let cx =
-          members_to_process.reduce((sum, b) => sum + b.pos.x, 0) /
-          members_to_process.length;
-        let cy =
-          members_to_process.reduce((sum, b) => sum + b.pos.y, 0) /
-          members_to_process.length;
-
-        //sort neighbors by angle around centroid.
-        members_to_process.sort(
-          (a, b) =>
-            atan2(a.pos.y - cy, a.pos.x - cx) -
-            atan2(b.pos.y - cy, b.pos.x - cx),
-        );
-
-        //smooth positions using lerp for nicer visual transitions.
-        members_to_process.forEach((b) => {
-          if (!b.displayPos) b.displayPos = b.pos.copy();
-          b.displayPos.lerp(b.pos, 0.1);
-        });
-
-        //compute average age to determine opacity
-        let avg_age =
-          members_to_process.reduce((sum, b) => sum + b.curr_age, 0) /
-          members_to_process.length;
-
-        //map age to opacity. same as in beings.show().
-        let opacity = map(avg_age, 0, 80, 0, 255);
-
-        //store group, also store if all members are dead.
-        groups.push({
-          neighbors: members_to_process,
-          opacity,
-          allDead: all_dead,
-        });
-      }
+    //one minute loop.
+    if (seconds >= day_length) {
+      day = millis();
+      time[0] = 0;
+      time[1] = 0;
+      time[2] = 0;
+      time[3] = 0;
+    } else {
+      time[0] = Math.floor(ms);
+      time[1] = seconds;
+      time[2] = minutes;
+      time[3] = hours;
     }
 
-    //now for each polygon, we draw a group:
-    this.poly_groups.forEach((g) => {
-      if (g.allDead) {
-        fill(0, 0, 0, 255); //black polygons for fully dead groups.
-      } else {
-        fill(255, 255, 255, g.opacity * 0.5); // white polygons for alive groups.
-      }
-      // noFill();
-
-      stroke(0);
-      beginShape();
-      let pts = g.neighbors.map((b) => b.displayPos);
-      pts.push(pts[0]); // close polygon
-      pts.forEach((p) => curveVertex(p.x, p.y));
-      endShape(CLOSE);
-    });
-
-    //update poly_groups to the new set.
-    this.poly_groups = groups;
+    return time;
   }
 }
+
+/*
+being-definition:
+*/
 
 class Being {
   constructor(x, y) {
@@ -190,11 +131,12 @@ class Being {
     this.prob_to_die = 0;
 
     //they have a mass.
-    this.mass = 1;
+    this.mass = 10;
 
     //they move at different speeds.
     this.speed = random(0, 2);
 
+    //they are alive when born.
     this.alive = true;
 
     //helper variables to do calculations.
@@ -237,15 +179,16 @@ class Being {
   }
 
   live(t) {
-    // this.show();
+    this.show();
     this.move(t);
-    this.age();
+    // this.age();
     this.die();
   }
 
   show() {
+    noFill(); 
     let c = map(this.curr_age, 0, 80, 255, 50);
-    fill(c);
+    stroke(c);
     circle(this.pos.x, this.pos.y, this.mass);
   }
 
@@ -326,28 +269,4 @@ class Being {
       this.alive = false;
     }
   }
-}
-
-//helper to keep time.
-function keep_time() {
-  const ms = millis() - day;
-  const seconds = Math.floor(ms / 1000) % 60;
-  const minutes = Math.floor(ms / (1000 * 60)) % 60;
-  const hours = Math.floor(ms / (1000 * 60 * 60));
-
-  //one minute loop.
-  if (seconds >= day_length) {
-    day = millis();
-    time[0] = 0;
-    time[1] = 0;
-    time[2] = 0;
-    time[3] = 0;
-  } else {
-    time[0] = Math.floor(ms);
-    time[1] = seconds;
-    time[2] = minutes;
-    time[3] = hours;
-  }
-
-  return time;
 }
