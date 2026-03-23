@@ -64,7 +64,7 @@ class World {
       if (!being.alive) this.beings.splice(i, 1);
     }
 
-    // this.interpret();
+    // this.represent();
 
     //update time.
     this.prev_second = second;
