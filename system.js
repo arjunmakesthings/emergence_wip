@@ -159,20 +159,31 @@ class Being {
 
   //constructor helper to make a schedule:
 
-  make_schedule(){
-    // a day length is 24.
+  make_schedule() {
+    let sched = [];
+    let avl_times = Array.from({ length: 24 }, (_, i) => i);
 
-    let sched = []; 
-    let starting_hour = Math.floor(random(0,24)); 
+    let blocks = Math.floor(random(2, 9));
 
-    for (let i = 0; i<=day_length; i++){
-      sched.push(i); 
-      arr_shuffle(sched);
+    let idx_0 = Math.floor(random(0, avl_times.length));
+    let waking_hour = avl_times[idx_0];
+    sched.push(waking_hour);
+    avl_times.splice(idx_0, 1);
+
+    for (let i = 1; i < blocks * 2; i++) {
+      let idx_1 = (idx_0 + Math.floor(random(2, 8))) % avl_times.length;
+      let t = avl_times[idx_1];
+      sched.push(t);
+      avl_times.splice(idx_1, 1);
+
+      idx_0 = idx_1;
     }
 
-    console.log(sched);
-    noLoop(); 
+    // sched.sort((a, b) => a - b);
 
+    console.log(sched);
+
+    noLoop();
   }
   // make_schedule() {
   //   let f = 24;
@@ -297,7 +308,7 @@ class Being {
   }
 }
 
-// global helpers: 
+// global helpers:
 function arr_shuffle(array) {
   let currentIndex = array.length,
     randomIndex;
